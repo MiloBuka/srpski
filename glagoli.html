@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Glagoli · Srpski</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap">
+<style>
+/* Layout: one-screen trainer — mode switch (cards / table), verb picker, flip card, know/don't-know bar */
+:root{
+  --bg:#E8ECF1; --surface:#FFFFFF; --ink:#18233A; --muted:#5C6880; --line:#CDD4DF;
+  --accent:#2747A6; --accent-soft:#DCE3F7; --end:#C2410C;
+  --yes:#1F7A4D; --yes-soft:#DDF1E6; --no:#B23A2E; --no-soft:#F8E0DC;
+  --f-num:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F141C; --surface:#1A2230; --ink:#E6EBF3; --muted:#9AA6BA; --line:#2C3748; --end:#FDBA74;
+  --accent:#8EA8F5; --accent-soft:#25325A; --yes:#5CC995; --yes-soft:#16362A; --no:#F08A7E; --no-soft:#3E1F1C; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F141C; --surface:#1A2230; --ink:#E6EBF3; --muted:#9AA6BA; --line:#2C3748; --end:#FDBA74;
+  --accent:#8EA8F5; --accent-soft:#25325A; --yes:#5CC995; --yes-soft:#16362A; --no:#F08A7E; --no-soft:#3E1F1C; color-scheme:dark }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;margin:0}
+.app{max-width:540px;margin:0 auto;padding-block:14px 18px;padding-inline:16px;display:flex;flex-direction:column;gap:12px;min-height:100%}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h1{font-family:var(--f-num);font-weight:700;font-size:20px;margin:0}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;color:var(--muted);font:600 13px var(--f-body);padding:8px 6px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 200px}
+select{width:100%;font:600 14px var(--f-body);padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.stats{display:flex;gap:6px;font-size:13px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.chip{padding:4px 10px;border-radius:99px;font-weight:600}
+.chip.y{background:var(--yes-soft);color:var(--yes)} .chip.n{background:var(--no-soft);color:var(--no)} .chip.u{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+
+.stage{flex:1;min-height:320px;display:flex}
+.card{position:relative;flex:1;min-height:320px;cursor:pointer;border-radius:20px}
+.face{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--surface);border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px 36px;text-align:center;gap:10px;transition:opacity .25s,transform .25s}
+.card.flipped .front,.card:not(.flipped) .back{opacity:0;visibility:hidden;transform:scale(.97)}
+.card.st-yes .face{box-shadow:inset 0 -5px 0 var(--yes)} .card.st-no .face{box-shadow:inset 0 -5px 0 var(--no)}
+.pron{font-family:var(--f-num);font-weight:700;font-size:clamp(40px,13vw,64px);line-height:1;color:var(--accent)}
+.inf{font-family:var(--f-num);font-weight:500;font-size:clamp(24px,7vw,32px)}
+.ru{color:var(--muted);font-size:15px}
+.form{font-family:var(--f-num);font-weight:500;font-size:clamp(30px,9vw,44px);line-height:1.15;overflow-wrap:anywhere}
+.form b{color:var(--end);font-weight:700}
+.ex{font-size:14px;background:var(--accent-soft);padding:8px 12px;border-radius:10px;max-width:34ch;line-height:1.4}
+.ex span{display:block;color:var(--muted);font-size:13px}
+.tip{font-size:13px;color:var(--muted);max-width:32ch;line-height:1.4}
+.hint{position:absolute;bottom:14px;left:0;right:0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.tag{position:absolute;top:14px;left:16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.speak{border:1px solid var(--line);background:var(--bg);color:var(--accent);border-radius:99px;padding:9px 16px;font:700 14px var(--f-body);cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.speak svg{width:18px;height:18px}
+.nav{display:grid;grid-template-columns:52px 1fr 1fr 52px;gap:8px}
+.nav button{border:0;border-radius:14px;padding:16px 8px;font:700 15px var(--f-body);cursor:pointer}
+.nav .arrow{background:var(--surface);color:var(--ink);border:1px solid var(--line);font-size:20px;padding:0}
+.nav .no{background:var(--no-soft);color:var(--no)} .nav .yes{background:var(--yes-soft);color:var(--yes)}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.tools label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.link{background:none;border:0;color:var(--muted);font:600 13px var(--f-body);text-decoration:underline;cursor:pointer;padding:4px}
+.empty{color:var(--muted);font-size:16px;max-width:26ch;line-height:1.4}
+.voice{font-size:12px;color:var(--muted);text-align:center;min-height:1em}
+
+/* table view */
+.tbl{display:flex;flex-direction:column;gap:10px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;line-height:1.5}
+.rule h2{font:700 15px var(--f-body);margin:0 0 6px}
+.ends{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;text-align:center;font-variant-numeric:tabular-nums;margin-top:8px}
+.ends div{background:var(--bg);border-radius:8px;padding:6px 2px;font-size:12px;color:var(--muted)}
+.ends div b{display:block;color:var(--end);font-size:15px}
+.vcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.vhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.vhead strong{font-family:var(--f-num);font-weight:500;font-size:18px}
+.vhead span{color:var(--muted);font-size:13px}
+.conj{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;margin-top:8px;font-size:15px}
+.conj div{display:flex;gap:8px;align-items:baseline;cursor:pointer;padding:3px 0}
+.conj i{font-style:normal;color:var(--muted);font-size:12px;width:44px;flex:none}
+.conj b{color:var(--end)}
+.vnote{font-size:13px;color:var(--muted);margin-top:6px}
+button:focus-visible,select:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.face,.bar i{transition:none}}
+.back{color:var(--muted);font:600 13px var(--f-body);text-decoration:none;align-self:flex-start}.back:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <a class="back" href="./">← Все тренажёры</a>
+
+  <header><h1>Glagoli · I</h1><span class="count" id="count"></span></header>
+  <div class="seg" role="group" aria-label="Режим">
+    <button id="v-table" aria-pressed="false">Таблица</button>
+    <button id="v-cards" aria-pressed="true">Карточки</button>
+  </div>
+  <div class="row">
+    <select id="verb" aria-label="Глагол"></select>
+    <div class="seg" role="group" aria-label="Порядок">
+      <button id="m-order" aria-pressed="true">По порядку</button>
+      <button id="m-shuffle" aria-pressed="false">Вперемешку</button>
+    </div>
+  </div>
+
+  <div id="cardsView" style="display:contents">
+    <div class="seg" role="group" aria-label="Какие карточки">
+      <button id="f-all" aria-pressed="true">Все</button>
+      <button id="f-no" aria-pressed="false">Не знаю</button>
+      <button id="f-new" aria-pressed="false">Новые</button>
+    </div>
+    <div class="stats"><span class="chip y" id="s-yes"></span><span class="chip n" id="s-no"></span><span class="chip u" id="s-new"></span></div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="stage">
+      <div class="card" id="card" tabindex="0" role="button" aria-label="Перевернуть карточку">
+        <div class="face front" id="front"></div>
+        <div class="face back" id="back"></div>
+      </div>
+    </div>
+    <div class="voice" id="voice"></div>
+    <div class="nav">
+      <button class="arrow" id="prev" aria-label="Назад">‹</button>
+      <button class="no" id="no">Не знаю</button>
+      <button class="yes" id="yes">Знаю</button>
+      <button class="arrow" id="next" aria-label="Вперёд">›</button>
+    </div>
+    <div class="tools">
+      <label><input type="checkbox" id="auto"> Озвучивать при перевороте</label>
+      <button class="link" id="reset">Сбросить отметки</button>
+    </div>
+  </div>
+
+  <div id="tableView" class="tbl" hidden></div>
+</div>
+
+<script>
+const VERBS=[
+ {inf:"raditi",ru:"работать, делать",st:"rad",ex:"Radim u kancelariji.",exru:"Я работаю в офисе."},
+ {inf:"učiti",ru:"учить, учиться",st:"uč",ex:"Učim srpski.",exru:"Я учу сербский."},
+ {inf:"želeti",ru:"хотеть, желать",st:"žel",ex:"Želim kafu.",exru:"Я хочу кофе.",note:"Не «жалеть» — жалеть будет žaliti."},
+ {inf:"živeti",ru:"жить",st:"živ",ex:"Živim u Beogradu.",exru:"Я живу в Белграде.",note:"Пишется živeti (не živiti), но спрягается так же: živim."},
+ {inf:"nositi",ru:"носить",st:"nos",ex:"Nosim torbu.",exru:"Я несу сумку."},
+ {inf:"govoriti",ru:"говорить",st:"govor",ex:"Govorim malo srpski.",exru:"Я немного говорю по-сербски."},
+ {inf:"koristiti",ru:"использовать",st:"korist",ex:"Koristim telefon.",exru:"Я пользуюсь телефоном."},
+ {inf:"misliti",ru:"думать",st:"misl",ex:"Mislim da je tako.",exru:"Думаю, что так."},
+ {inf:"čistiti",ru:"чистить, убирать",st:"čist",ex:"Čistim stan.",exru:"Я убираю квартиру."},
+ {inf:"voleti",ru:"любить",st:"vol",ex:"Volim more.",exru:"Я люблю море."},
+ {inf:"videti",ru:"видеть",st:"vid",ex:"Vidim te.",exru:"Я тебя вижу."},
+ {inf:"leteti",ru:"летать, лететь",st:"let",ex:"Ptica leti.",exru:"Птица летит."},
+ {inf:"trčati",ru:"бегать",st:"trč",ex:"Trčim svako jutro.",exru:"Я бегаю каждое утро.",note:"Окончание -ati, но спрягается как raditi: trčim, trče."},
+ {inf:"buditi se",ru:"просыпаться",st:"bud",se:1,ex:"Budim se u sedam.",exru:"Я просыпаюсь в семь.",note:"С местоимением se идёт вторым: Ja se budim."},
+ {inf:"oblačiti se",ru:"одеваться",st:"oblač",se:1,ex:"Oblačim se brzo.",exru:"Я быстро одеваюсь.",note:"С местоимением se идёт вторым: Ja se oblačim."}
+];
+const PR=[["ja","я","im"],["ti","ты","iš"],["on / ona","он / она","i"],["mi","мы","imo"],["vi","вы","ite"],["oni / one","они","e"]];
+const CARDS=[];VERBS.forEach((v,vi)=>PR.forEach((p,pi)=>CARDS.push({vi,pi,id:v.st+"-"+pi})));
+const formHTML=(v,p)=>v.st+"<b>"+PR[p][2]+"</b>"+(v.se?" se":"");
+const formTxt=(v,p)=>v.st+PR[p][2]+(v.se?" se":"");
+
+const KEY="glagoli-v1";
+let S={marks:{},mode:"order",filter:"all",view:"cards",verb:"all",auto:false,pos:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+
+const sel=$("verb");
+sel.innerHTML='<option value="all">Все 15 глаголов</option>'+VERBS.map((v,i)=>`<option value="${i}">${v.inf} — ${v.ru}</option>`).join("");
+
+let deck=[],idx=0,shuffleOrder=null;
+function build(){
+  let base=CARDS.map((_,i)=>i);
+  if(S.mode==="shuffle"){
+    if(!shuffleOrder){shuffleOrder=base.slice();for(let i=shuffleOrder.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[shuffleOrder[i],shuffleOrder[j]]=[shuffleOrder[j],shuffleOrder[i]]}}
+    base=shuffleOrder.slice();
+  }
+  if(S.verb!=="all")base=base.filter(i=>CARDS[i].vi==+S.verb);
+  if(S.filter==="no")base=base.filter(i=>S.marks[CARDS[i].id]==="no");
+  if(S.filter==="new")base=base.filter(i=>!S.marks[CARDS[i].id]);
+  deck=base;
+}
+const card=$("card");
+const speakBtn=`<button class="speak" data-speak><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>Слушать</button>`;
+
+function renderTable(){
+  const list=S.verb==="all"?VERBS.map((v,i)=>i):[+S.verb];
+  $("tableView").innerHTML=`<div class="rule"><h2>Одна схема на все 15</h2>Отбрось <b>-iti / -eti / -ati</b> и добавь окончание. Нажми на форму, чтобы услышать.
+   <div class="ends">${PR.map(p=>`<div><b>-${p[2]}</b>${p[0].split(" ")[0]}</div>`).join("")}</div></div>`+
+   list.map(i=>{const v=VERBS[i];return `<div class="vcard"><div class="vhead"><strong>${v.inf}</strong><span>${v.ru}</span></div>
+   <div class="conj">${PR.map((p,pi)=>`<div data-say="${p[0].split(" ")[0]} ${formTxt(v,pi)}"><i>${p[0]}</i><span>${formHTML(v,pi)}</span></div>`).join("")}</div>
+   <div class="vnote">${v.ex} — ${v.exru}${v.note?"<br>"+v.note:""}</div></div>`}).join("");
+}
+
+function render(){
+  for(const [id,k,v] of [["m-order","mode","order"],["m-shuffle","mode","shuffle"],["f-all","filter","all"],["f-no","filter","no"],["f-new","filter","new"],["v-table","view","table"],["v-cards","view","cards"]])
+    $(id).setAttribute("aria-pressed",S[k]===v);
+  sel.value=S.verb;$("auto").checked=S.auto;
+  const isT=S.view==="table";
+  $("tableView").hidden=!isT;$("cardsView").style.display=isT?"none":"contents";
+  $("m-order").parentElement.style.visibility=isT?"hidden":"visible";
+  if(isT){renderTable();$("count").textContent="";return}
+  const pool=S.verb==="all"?CARDS:CARDS.filter(c=>c.vi==+S.verb);
+  const y=pool.filter(c=>S.marks[c.id]==="yes").length,n=pool.filter(c=>S.marks[c.id]==="no").length;
+  $("s-yes").textContent="Знаю: "+y;$("s-no").textContent="Не знаю: "+n;$("s-new").textContent="Новые: "+(pool.length-y-n);
+  $("bar").style.width=(pool.length?y/pool.length*100:0)+"%";
+  card.classList.remove("flipped","st-yes","st-no");
+  if(!deck.length){
+    const msg=S.filter==="no"?"Карточек с отметкой «Не знаю» нет. Отлично!":"Новых карточек не осталось — все отмечены.";
+    $("front").innerHTML=`<div class="empty">${msg}</div>`;$("back").innerHTML="";$("count").textContent="0 / 0";return;
+  }
+  idx=Math.max(0,Math.min(idx,deck.length-1));
+  const c=CARDS[deck[idx]],v=VERBS[c.vi],p=PR[c.pi],m=S.marks[c.id];
+  if(m)card.classList.add("st-"+m);
+  $("count").textContent=(idx+1)+" / "+deck.length;
+  const tag=m==="yes"?"знаю":m==="no"?"не знаю":"новая";
+  $("front").innerHTML=`<span class="tag">${tag}</span><span class="pron">${p[0]}</span><span class="inf">${v.inf}</span><span class="ru">${p[1]} · ${v.ru}</span><span class="hint">нажми, чтобы перевернуть</span>`;
+  $("back").innerHTML=`<span class="tag">${tag}</span><span class="ru">${p[0]}</span><span class="form">${formHTML(v,c.pi)}</span>${speakBtn}<span class="ex">${v.ex}<span>${v.exru}</span></span>${v.note?`<span class="tip">${v.note}</span>`:""}`;
+  S.pos=idx;save();
+}
+
+/* speech */
+let voice=null,ttsOK=false;
+function pickVoice(){try{const vs=speechSynthesis.getVoices()||[];
+  voice=vs.find(v=>/^sr/i.test(v.lang))||vs.find(v=>/^hr/i.test(v.lang))||vs.find(v=>/^bs/i.test(v.lang))||null;
+  $("voice").textContent=!vs.length?"":voice?"Голос: "+voice.name:"Сербского голоса на устройстве нет — читает голос по умолчанию";}catch(e){}}
+function initSpeech(){try{if(window.speechSynthesis&&window.SpeechSynthesisUtterance){ttsOK=true;pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+  else $("voice").textContent="Озвучка не работает в этом браузере — открой ссылку в Safari или Chrome"}catch(e){}}
+function say(t){if(!ttsOK)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);if(voice){u.voice=voice;u.lang=voice.lang}else u.lang="sr-RS";u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+function speakCur(){if(!deck.length)return;const c=CARDS[deck[idx]];say(PR[c.pi][0].split(" ")[0]+" "+formTxt(VERBS[c.vi],c.pi))}
+
+function flip(){if(!deck.length)return;card.classList.toggle("flipped");if(S.auto&&card.classList.contains("flipped"))speakCur()}
+card.addEventListener("click",e=>{if(e.target.closest("[data-speak]")){e.stopPropagation();speakCur();return}flip()});
+card.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();flip()}});
+$("tableView").addEventListener("click",e=>{const d=e.target.closest("[data-say]");if(d)say(d.dataset.say)});
+function go(s){if(!deck.length)return;idx=(idx+s+deck.length)%deck.length;render()}
+$("prev").onclick=()=>go(-1);$("next").onclick=()=>go(1);
+function mark(val){if(!deck.length)return;const cur=deck[idx];S.marks[CARDS[cur].id]=val;build();
+  if(deck.includes(cur)){idx=deck.indexOf(cur)+1;if(idx>=deck.length)idx=0}render()}
+$("yes").onclick=()=>mark("yes");$("no").onclick=()=>mark("no");
+const set=(k,v)=>{S[k]=v;if(k==="mode"&&v==="shuffle")shuffleOrder=null;build();idx=0;render()};
+$("m-order").onclick=()=>set("mode","order");$("m-shuffle").onclick=()=>set("mode","shuffle");
+$("f-all").onclick=()=>set("filter","all");$("f-no").onclick=()=>set("filter","no");$("f-new").onclick=()=>set("filter","new");
+$("v-table").onclick=()=>set("view","table");$("v-cards").onclick=()=>set("view","cards");
+sel.onchange=()=>set("verb",sel.value);
+$("auto").onchange=e=>{S.auto=e.target.checked;save()};
+let armed=false;
+$("reset").onclick=()=>{if(!armed){armed=true;$("reset").textContent="Точно сбросить?";setTimeout(()=>{armed=false;$("reset").textContent="Сбросить отметки"},3000);return}
+  armed=false;S.marks={};$("reset").textContent="Сбросить отметки";build();idx=0;render()};
+document.addEventListener("keydown",e=>{if(/INPUT|SELECT/.test(e.target.tagName)||S.view==="table")return;if(e.key==="ArrowRight")go(1);if(e.key==="ArrowLeft")go(-1)});
+let tx=null;
+card.addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
+card.addEventListener("touchend",e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;tx=null;if(Math.abs(dx)>60){e.preventDefault();go(dx<0?1:-1)}});
+
+try{build();idx=S.mode==="order"?(S.pos||0):0;render()}
+catch(e){S={marks:{},mode:"order",filter:"all",view:"cards",verb:"all",auto:false,pos:0};shuffleOrder=null;build();idx=0;render()}
+initSpeech();
+</script>
+
+</body>
+</html>

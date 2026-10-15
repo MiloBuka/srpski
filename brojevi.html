@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Brójevi · Srpski</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap">
+<style>
+/* Layout: one-screen flashcard app — controls row, big flip card, know/don't-know bar */
+:root{
+  --bg:#E8ECF1; --surface:#FFFFFF; --ink:#18233A; --muted:#5C6880; --line:#CDD4DF;
+  --accent:#2747A6; --accent-soft:#DCE3F7;
+  --yes:#1F7A4D; --yes-soft:#DDF1E6; --no:#B23A2E; --no-soft:#F8E0DC;
+  --f-num:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F141C; --surface:#1A2230; --ink:#E6EBF3; --muted:#9AA6BA; --line:#2C3748;
+  --accent:#8EA8F5; --accent-soft:#25325A; --yes:#5CC995; --yes-soft:#16362A; --no:#F08A7E; --no-soft:#3E1F1C; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F141C; --surface:#1A2230; --ink:#E6EBF3; --muted:#9AA6BA; --line:#2C3748;
+  --accent:#8EA8F5; --accent-soft:#25325A; --yes:#5CC995; --yes-soft:#16362A; --no:#F08A7E; --no-soft:#3E1F1C; color-scheme:dark }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;margin:0}
+.app{max-width:520px;margin:0 auto;padding-block:14px 18px;padding-inline:16px;display:flex;flex-direction:column;gap:12px;min-height:100%}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h1{font-family:var(--f-num);font-weight:700;font-size:20px;margin:0;letter-spacing:-.01em}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;color:var(--muted);font:600 13px var(--f-body);padding:8px 6px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row .seg{flex:1 1 200px}
+.stats{display:flex;gap:6px;font-size:13px;font-variant-numeric:tabular-nums}
+.chip{padding:4px 10px;border-radius:99px;font-weight:600}
+.chip.y{background:var(--yes-soft);color:var(--yes)} .chip.n{background:var(--no-soft);color:var(--no)} .chip.u{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+
+.stage{flex:1;min-height:320px;display:flex}
+.card{position:relative;flex:1;min-height:320px;cursor:pointer;border-radius:20px}
+.face{transition:opacity .25s, transform .25s}
+.card.flipped .front, .card:not(.flipped) .back{opacity:0;visibility:hidden;transform:scale(.97)}
+.face{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--surface);border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;text-align:center;gap:10px}
+.card.st-yes .face{box-shadow:inset 0 -5px 0 var(--yes)} .card.st-no .face{box-shadow:inset 0 -5px 0 var(--no)}
+.big{font-family:var(--f-num);font-weight:700;font-size:clamp(64px,22vw,120px);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.word{font-family:var(--f-num);font-weight:500;font-size:clamp(28px,8.5vw,42px);line-height:1.15;text-wrap:balance;overflow-wrap:anywhere}
+.word.long{font-size:clamp(22px,6.5vw,32px)}
+.alt{color:var(--muted);font-size:15px}
+.cyr{color:var(--muted);font-size:14px;letter-spacing:.02em}
+.note{font-size:13px;color:var(--ink);background:var(--accent-soft);padding:8px 12px;border-radius:10px;max-width:34ch;line-height:1.4}
+.hint{position:absolute;bottom:14px;left:0;right:0;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.tag{position:absolute;top:14px;left:16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.speak{border:1px solid var(--line);background:var(--bg);color:var(--accent);border-radius:99px;padding:10px 18px;font:700 14px var(--f-body);cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.speak svg{width:18px;height:18px}
+.nav{display:grid;grid-template-columns:52px 1fr 1fr 52px;gap:8px}
+.nav button{border:0;border-radius:14px;padding:16px 8px;font:700 15px var(--f-body);cursor:pointer}
+.nav .arrow{background:var(--surface);color:var(--ink);border:1px solid var(--line);font-size:20px;padding:0}
+.nav .no{background:var(--no-soft);color:var(--no)} .nav .yes{background:var(--yes-soft);color:var(--yes)}
+.tools{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.tools label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.link{background:none;border:0;color:var(--muted);font:600 13px var(--f-body);text-decoration:underline;cursor:pointer;padding:4px}
+.empty{color:var(--muted);font-size:16px;max-width:26ch;line-height:1.4}
+button:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.voice{font-size:12px;color:var(--muted);text-align:center;min-height:1em}
+@media (prefers-reduced-motion:reduce){.face{transition:none}}
+.back{color:var(--muted);font:600 13px var(--f-body);text-decoration:none;align-self:flex-start}.back:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <a class="back" href="./">← Все тренажёры</a>
+
+  <header><h1>Brójevi</h1><span class="count" id="count"></span></header>
+  <div class="row">
+    <div class="seg" role="group" aria-label="Порядок">
+      <button id="m-order" aria-pressed="true">По порядку</button>
+      <button id="m-shuffle" aria-pressed="false">Вперемешку</button>
+    </div>
+    <div class="seg" role="group" aria-label="Какие карточки">
+      <button id="f-all" aria-pressed="true">Все</button>
+      <button id="f-no" aria-pressed="false">Не знаю</button>
+      <button id="f-new" aria-pressed="false">Новые</button>
+    </div>
+  </div>
+  <div class="seg" role="group" aria-label="Сторона">
+    <button id="d-num" aria-pressed="true">Число → слово</button>
+    <button id="d-word" aria-pressed="false">Слово → число</button>
+  </div>
+  <div class="stats"><span class="chip y" id="s-yes"></span><span class="chip n" id="s-no"></span><span class="chip u" id="s-new"></span></div>
+  <div class="bar"><i id="bar"></i></div>
+
+  <div class="stage">
+    <div class="card" id="card" tabindex="0" role="button" aria-label="Перевернуть карточку">
+      <div class="face front" id="front"></div>
+      <div class="face back" id="back"></div>
+    </div>
+  </div>
+  <div class="voice" id="voice"></div>
+
+  <div class="nav">
+    <button class="arrow" id="prev" aria-label="Назад">‹</button>
+    <button class="no" id="no">Не знаю</button>
+    <button class="yes" id="yes">Знаю</button>
+    <button class="arrow" id="next" aria-label="Вперёд">›</button>
+  </div>
+  <div class="tools">
+    <label><input type="checkbox" id="auto"> Озвучивать при перевороте</label>
+    <button class="link" id="reset">Сбросить отметки</button>
+  </div>
+</div>
+
+<script>
+const DATA=[
+ [0,"núla"],[1,"jédan","jédna, jédno","jédan — м. р., jédna — ж. р., jédno — ср. р."],
+ [2,"dva","dve, dva","dva — м. и ср. р., dve — ж. р."],[3,"tri"],[4,"čétiri"],[5,"pet"],[6,"šest"],
+ [7,"sédam"],[8,"ósam"],[9,"dévet"],[10,"déset"],[11,"jedánaest"],[12,"dvánaest"],[13,"trínaest"],
+ [14,"četŕnaest"],[15,"pétnaest"],[16,"šésnaest"],[17,"sedámnaest"],[18,"osámnaest"],[19,"devétnaest"],
+ [20,"dvádeset",null,"Пишется с двумя «e»; в живой речи часто сокращают"],
+ [21,"dvádeset jédan"],[22,"dvádeset dva"],[30,"trídeset"],[40,"četrdéset"],[50,"pedéset"],
+ [60,"šezdéset"],[70,"sedamdéset"],[80,"osamdéset"],[90,"devedéset"],[100,"sto"],[200,"dvésta"],
+ [300,"trísta"],[400,"čétiristo"],[500,"pétsto"],[600,"šéststo",null,"Второе «t» обычно не слышно"],
+ [700,"sédamsto"],[800,"ósamsto"],[900,"dévetsto"],
+ [1000,"híljadu",null,"2, 3, 4 → híljade · 5 и больше → híljada"],
+ [2000,"dve híljade",null,"2, 3, 4 → híljadE"],[5000,"pet híljada",null,"5 и больше → híljadA"]
+].map(([n,w,alt,note])=>({n,w,alt,note}));
+
+const KEY="brojevi-v1";
+let S={marks:{},mode:"order",filter:"all",dir:"num",auto:false,pos:0};
+try{Object.assign(S,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+
+const plain=s=>s.normalize?s.normalize("NFD").replace(/́/g,"").normalize("NFC"):s.replace(/[áéíóú]/g,c=>"aeiou"["áéíóú".indexOf(c)]).replace(/ŕ/g,"r");
+const CYR={lj:"љ",nj:"њ",dž:"џ",a:"а",b:"б",c:"ц",č:"ч",ć:"ћ",d:"д",đ:"ђ",e:"е",f:"ф",g:"г",h:"х",i:"и",j:"ј",k:"к",l:"л",m:"м",n:"н",o:"о",p:"п",r:"р",s:"с",š:"ш",t:"т",u:"у",v:"в",z:"з",ž:"ж"};
+const cyr=s=>plain(s).replace(/lj|nj|dž|[a-zčćđšž]/g,m=>CYR[m]||m);
+const fmt=n=>n>=1000?n.toLocaleString("ru-RU"):String(n);
+
+let deck=[],idx=0,shuffleOrder=null;
+function build(){
+  let base=DATA.map((_,i)=>i);
+  if(S.mode==="shuffle"){
+    if(!shuffleOrder){shuffleOrder=base.slice();for(let i=shuffleOrder.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[shuffleOrder[i],shuffleOrder[j]]=[shuffleOrder[j],shuffleOrder[i]]}}
+    base=shuffleOrder.slice();
+  }
+  if(S.filter==="no")base=base.filter(i=>S.marks[DATA[i].n]==="no");
+  if(S.filter==="new")base=base.filter(i=>!S.marks[DATA[i].n]);
+  deck=base;
+}
+const $=id=>document.getElementById(id);
+const card=$("card");
+
+function render(){
+  for(const [id,k,v] of [["m-order","mode","order"],["m-shuffle","mode","shuffle"],["f-all","filter","all"],["f-no","filter","no"],["f-new","filter","new"],["d-num","dir","num"],["d-word","dir","word"]])
+    $(id).setAttribute("aria-pressed",S[k]===v);
+  $("auto").checked=S.auto;
+  const y=DATA.filter(d=>S.marks[d.n]==="yes").length,n=DATA.filter(d=>S.marks[d.n]==="no").length;
+  $("s-yes").textContent="Знаю: "+y;$("s-no").textContent="Не знаю: "+n;$("s-new").textContent="Новые: "+(DATA.length-y-n);
+  $("bar").style.width=(y/DATA.length*100)+"%";
+  card.classList.remove("flipped","st-yes","st-no");
+  if(!deck.length){
+    const msg=S.filter==="no"?"Карточек с отметкой «Не знаю» нет. Отлично!":"Новых карточек не осталось — все отмечены.";
+    $("front").innerHTML=`<div class="empty">${msg}</div>`;$("back").innerHTML="";
+    $("count").textContent="0 / 0";return;
+  }
+  idx=Math.max(0,Math.min(idx,deck.length-1));
+  const d=DATA[deck[idx]],m=S.marks[d.n];
+  if(m)card.classList.add("st-"+m);
+  $("count").textContent=(idx+1)+" / "+deck.length;
+  const numFace=`<span class="big">${fmt(d.n)}</span>`;
+  const speakBtn=`<button class="speak" data-speak><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>Слушать</button>`;
+  const wordFace=`<span class="word${d.w.length>11?" long":""}">${d.w}</span>${d.alt?`<span class="alt">(${d.alt})</span>`:""}<span class="cyr">${cyr(d.w)}</span>${speakBtn}`;
+  const noteHtml=d.note?`<span class="note">${d.note}</span>`:"";
+  const tag=m==="yes"?"знаю":m==="no"?"не знаю":"новая";
+  if(S.dir==="num"){
+    $("front").innerHTML=`<span class="tag">${tag}</span>${numFace}<span class="hint">нажми, чтобы перевернуть</span>`;
+    $("back").innerHTML=`<span class="tag">${tag}</span>${wordFace}${noteHtml}`;
+  }else{
+    $("front").innerHTML=`<span class="tag">${tag}</span>${wordFace}<span class="hint">нажми, чтобы перевернуть</span>`;
+    $("back").innerHTML=`<span class="tag">${tag}</span>${numFace}${noteHtml}`;
+  }
+  S.pos=idx;save();
+}
+
+/* speech */
+let voice=null,ttsOK=false;
+function pickVoice(){
+  try{
+    const vs=window.speechSynthesis.getVoices()||[];
+    voice=vs.find(v=>/^sr/i.test(v.lang))||vs.find(v=>/^hr/i.test(v.lang))||vs.find(v=>/^bs/i.test(v.lang))||null;
+    $("voice").textContent=!vs.length?"":voice?"Голос: "+voice.name:"Сербского голоса на устройстве нет — читает голос по умолчанию";
+  }catch(e){}
+}
+function initSpeech(){
+  try{
+    if(window.speechSynthesis&&window.SpeechSynthesisUtterance){ttsOK=true;pickVoice();window.speechSynthesis.onvoiceschanged=pickVoice}
+    else $("voice").textContent="Озвучка не работает в этом браузере — открой ссылку в Safari или Chrome";
+  }catch(e){$("voice").textContent="Озвучка не работает в этом браузере — открой ссылку в Safari или Chrome"}
+}
+function speak(){
+  if(!deck.length||!ttsOK)return;
+  try{
+    const d=DATA[deck[idx]];
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(plain(d.w));
+    if(voice){u.voice=voice;u.lang=voice.lang}else u.lang="sr-RS";
+    u.rate=.85;speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function flip(){
+  if(!deck.length)return;
+  card.classList.toggle("flipped");
+  const wordShown=(S.dir==="num")===card.classList.contains("flipped");
+  if(S.auto&&wordShown)speak();
+}
+card.addEventListener("click",e=>{if(e.target.closest("[data-speak]")){e.stopPropagation();speak();return}flip()});
+card.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();flip()}});
+function go(step){if(!deck.length)return;idx=(idx+step+deck.length)%deck.length;render();if(S.auto&&S.dir==="word")speak()}
+$("prev").onclick=()=>go(-1);$("next").onclick=()=>go(1);
+function mark(v){
+  if(!deck.length)return;
+  const d=DATA[deck[idx]];S.marks[d.n]=v;
+  const cur=deck[idx];build();
+  if(deck.includes(cur)){idx=deck.indexOf(cur)+1;if(idx>=deck.length)idx=0}
+  render();if(S.auto&&S.dir==="word")speak();
+}
+$("yes").onclick=()=>mark("yes");$("no").onclick=()=>mark("no");
+const set=(k,v)=>{S[k]=v;if(k==="mode"&&v==="shuffle")shuffleOrder=null;build();idx=0;render()};
+$("m-order").onclick=()=>set("mode","order");$("m-shuffle").onclick=()=>set("mode","shuffle");
+$("f-all").onclick=()=>set("filter","all");$("f-no").onclick=()=>set("filter","no");$("f-new").onclick=()=>set("filter","new");
+$("d-num").onclick=()=>{S.dir="num";render()};$("d-word").onclick=()=>{S.dir="word";render()};
+$("auto").onchange=e=>{S.auto=e.target.checked;save()};
+let armed=false;
+$("reset").onclick=()=>{
+  if(!armed){armed=true;$("reset").textContent="Точно сбросить?";setTimeout(()=>{armed=false;$("reset").textContent="Сбросить отметки"},3000);return}
+  armed=false;S.marks={};$("reset").textContent="Сбросить отметки";build();idx=0;render();
+};
+document.addEventListener("keydown",e=>{if(e.target.tagName==="INPUT")return;if(e.key==="ArrowRight")go(1);if(e.key==="ArrowLeft")go(-1)});
+let tx=null;
+card.addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
+card.addEventListener("touchend",e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;tx=null;if(Math.abs(dx)>60){e.preventDefault();go(dx<0?1:-1)}});
+
+try{build();idx=S.mode==="order"?(S.pos||0):0;render()}
+catch(e){S={marks:{},mode:"order",filter:"all",dir:"num",auto:false,pos:0};shuffleOrder=null;build();idx=0;render()}
+initSpeech();
+</script>
+
+</body>
+</html>
