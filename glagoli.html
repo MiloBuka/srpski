@@ -165,6 +165,9 @@ const PR=[["ja","я","im"],["ti","ты","iš"],["on / ona / ono","он / она 
 const CARDS=[];VERBS.forEach((v,vi)=>PR.forEach((p,pi)=>CARDS.push({vi,pi,id:v.st+"-"+pi})));
 const formHTML=(v,p)=>v.st+"<b>"+PR[p][2]+"</b>"+(v.se?" se":"");
 const formTxt=(v,p)=>v.st+PR[p][2]+(v.se?" se":"");
+const pr1=p=>PR[p][0].split(" ")[0];
+/* with a pronoun, se goes second: ja se oblačim */
+const sayTxt=(v,p)=>pr1(p)+(v.se?" se ":" ")+v.st+PR[p][2];
 
 const KEY="glagoli-v1";
 let S={marks:{},mode:"order",filter:"all",view:"cards",verb:"all",auto:false,pos:0};
@@ -195,7 +198,7 @@ function renderTable(){
   $("tableView").innerHTML=`<div class="rule"><h2>Одна схема на все 15</h2>Отбрось <b>-iti / -eti / -ati</b> и добавь окончание. Нажми на форму, чтобы услышать.
    <div class="ends">${PR.map(p=>`<div><span>${p[0]}</span><b>-${p[2]}</b></div>`).join("")}</div></div>`+
    list.map(i=>{const v=VERBS[i];return `<div class="vcard"><div class="vhead"><strong>${v.inf}</strong><span>${v.ru}</span></div>
-   <div class="conj"><div class="h">Ед. число</div>${PR.slice(0,3).map((p,pi)=>`<div data-say="${p[0].split(" ")[0]} ${formTxt(v,pi)}"><i>${p[0].replace(/ \/ /g,"/")}</i><span>${formHTML(v,pi)}</span></div>`).join("")}<div class="h">Мн. число</div>${PR.slice(3).map((p,k)=>{const pi=k+3;return `<div data-say="${p[0].split(" ")[0]} ${formTxt(v,pi)}"><i>${p[0].replace(/ \/ /g,"/")}</i><span>${formHTML(v,pi)}</span></div>`}).join("")}</div>
+   <div class="conj"><div class="h">Ед. число</div>${PR.slice(0,3).map((p,pi)=>`<div data-say="${sayTxt(v,pi)}"><i>${p[0].replace(/ \/ /g,"/")}</i><span>${formHTML(v,pi)}</span></div>`).join("")}<div class="h">Мн. число</div>${PR.slice(3).map((p,k)=>{const pi=k+3;return `<div data-say="${sayTxt(v,pi)}"><i>${p[0].replace(/ \/ /g,"/")}</i><span>${formHTML(v,pi)}</span></div>`}).join("")}</div>
    <div class="vnote">${v.ex} — ${v.exru}${v.note?"<br>"+v.note:""}</div></div>`}).join("");
 }
 
@@ -222,7 +225,7 @@ function render(){
   $("count").textContent=(idx+1)+" / "+deck.length;
   const tag=m==="yes"?"знаю":m==="no"?"не знаю":"новая";
   $("front").innerHTML=`<span class="tag">${tag}</span><span class="pron">${p[0]}</span><span class="inf">${v.inf}</span><span class="ru">${p[1]} · ${v.ru}</span><span class="hint">нажми, чтобы перевернуть</span>`;
-  $("back").innerHTML=`<span class="tag">${tag}</span><span class="ru">${p[0]}</span><span class="form">${formHTML(v,c.pi)}</span>${speakBtn}<span class="ex">${v.ex}<span>${v.exru}</span></span>${v.note?`<span class="tip">${v.note}</span>`:""}`;
+  $("back").innerHTML=`<span class="tag">${tag}</span><span class="ru">${p[0]}</span><span class="form">${formHTML(v,c.pi)}</span>${v.se?`<span class="tip">с местоимением: <b>${sayTxt(v,c.pi)}</b></span>`:""}${speakBtn}<span class="ex">${v.ex}<span>${v.exru}</span></span>${v.note?`<span class="tip">${v.note}</span>`:""}`;
   S.pos=idx;save();
 }
 
@@ -234,7 +237,7 @@ function pickVoice(){try{const vs=speechSynthesis.getVoices()||[];
 function initSpeech(){try{if(window.speechSynthesis&&window.SpeechSynthesisUtterance){ttsOK=true;pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
   else $("voice").textContent="Озвучка не работает в этом браузере — открой ссылку в Safari или Chrome"}catch(e){}}
 function say(t){if(!ttsOK)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);if(voice){u.voice=voice;u.lang=voice.lang}else u.lang="sr-RS";u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
-function speakCur(){if(!deck.length)return;const c=CARDS[deck[idx]];say(PR[c.pi][0].split(" ")[0]+" "+formTxt(VERBS[c.vi],c.pi))}
+function speakCur(){if(!deck.length)return;const c=CARDS[deck[idx]];say(sayTxt(VERBS[c.vi],c.pi))}
 
 function flip(){if(!deck.length)return;card.classList.toggle("flipped");if(S.auto&&card.classList.contains("flipped"))speakCur()}
 card.addEventListener("click",e=>{if(e.target.closest("[data-speak]")){e.stopPropagation();speakCur();return}flip()});
