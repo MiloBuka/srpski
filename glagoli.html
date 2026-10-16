@@ -75,16 +75,19 @@ select{width:100%;font:600 14px var(--f-body);padding:9px 10px;border-radius:10p
 .tbl{display:flex;flex-direction:column;gap:10px}
 .rule{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;line-height:1.5}
 .rule h2{font:700 15px var(--f-body);margin:0 0 6px}
-.ends{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;text-align:center;font-variant-numeric:tabular-nums;margin-top:8px}
+.ends{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,auto);grid-auto-flow:column;gap:4px;text-align:center;font-variant-numeric:tabular-nums;margin-top:8px}
 .ends div{background:var(--bg);border-radius:8px;padding:6px 2px;font-size:12px;color:var(--muted)}
-.ends div b{display:block;color:var(--end);font-size:15px}
+.ends div{display:flex;justify-content:space-between;align-items:baseline;padding:6px 10px!important;text-align:left}
+.ends div b{color:var(--end);font-size:15px}
 .vcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
 .vhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .vhead strong{font-family:var(--f-num);font-weight:500;font-size:18px}
 .vhead span{color:var(--muted);font-size:13px}
-.conj{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;margin-top:8px;font-size:15px}
-.conj div{display:flex;gap:8px;align-items:baseline;cursor:pointer;padding:3px 0}
-.conj i{font-style:normal;color:var(--muted);font-size:12px;width:44px;flex:none}
+.conj{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto auto;grid-auto-flow:column;gap:2px 16px;margin-top:8px;font-size:15px}
+.conj .h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);cursor:default;padding:0 0 2px;border-bottom:1px solid var(--line)}
+.conj div{display:flex;flex-direction:column;gap:1px;cursor:pointer;padding:5px 0;min-width:0}
+.conj i{font-style:normal;color:var(--muted);font-size:11px;line-height:1.2}
+.conj span{font-size:16px}
 .conj b{color:var(--end)}
 .vnote{font-size:13px;color:var(--muted);margin-top:6px}
 button:focus-visible,select:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -158,7 +161,7 @@ const VERBS=[
  {inf:"buditi se",ru:"просыпаться",st:"bud",se:1,ex:"Budim se u sedam.",exru:"Я просыпаюсь в семь.",note:"С местоимением se идёт вторым: Ja se budim."},
  {inf:"oblačiti se",ru:"одеваться",st:"oblač",se:1,ex:"Oblačim se brzo.",exru:"Я быстро одеваюсь.",note:"С местоимением se идёт вторым: Ja se oblačim."}
 ];
-const PR=[["ja","я","im"],["ti","ты","iš"],["on / ona","он / она","i"],["mi","мы","imo"],["vi","вы","ite"],["oni / one","они","e"]];
+const PR=[["ja","я","im"],["ti","ты","iš"],["on / ona / ono","он / она / оно","i"],["mi","мы","imo"],["vi","вы","ite"],["oni / one / ona","они","e"]];
 const CARDS=[];VERBS.forEach((v,vi)=>PR.forEach((p,pi)=>CARDS.push({vi,pi,id:v.st+"-"+pi})));
 const formHTML=(v,p)=>v.st+"<b>"+PR[p][2]+"</b>"+(v.se?" se":"");
 const formTxt=(v,p)=>v.st+PR[p][2]+(v.se?" se":"");
@@ -190,9 +193,9 @@ const speakBtn=`<button class="speak" data-speak><svg viewBox="0 0 24 24" fill="
 function renderTable(){
   const list=S.verb==="all"?VERBS.map((v,i)=>i):[+S.verb];
   $("tableView").innerHTML=`<div class="rule"><h2>Одна схема на все 15</h2>Отбрось <b>-iti / -eti / -ati</b> и добавь окончание. Нажми на форму, чтобы услышать.
-   <div class="ends">${PR.map(p=>`<div><b>-${p[2]}</b>${p[0].split(" ")[0]}</div>`).join("")}</div></div>`+
+   <div class="ends">${PR.map(p=>`<div><span>${p[0]}</span><b>-${p[2]}</b></div>`).join("")}</div></div>`+
    list.map(i=>{const v=VERBS[i];return `<div class="vcard"><div class="vhead"><strong>${v.inf}</strong><span>${v.ru}</span></div>
-   <div class="conj">${PR.map((p,pi)=>`<div data-say="${p[0].split(" ")[0]} ${formTxt(v,pi)}"><i>${p[0]}</i><span>${formHTML(v,pi)}</span></div>`).join("")}</div>
+   <div class="conj"><div class="h">Ед. число</div>${PR.slice(0,3).map((p,pi)=>`<div data-say="${p[0].split(" ")[0]} ${formTxt(v,pi)}"><i>${p[0].replace(/ \/ /g,"/")}</i><span>${formHTML(v,pi)}</span></div>`).join("")}<div class="h">Мн. число</div>${PR.slice(3).map((p,k)=>{const pi=k+3;return `<div data-say="${p[0].split(" ")[0]} ${formTxt(v,pi)}"><i>${p[0].replace(/ \/ /g,"/")}</i><span>${formHTML(v,pi)}</span></div>`}).join("")}</div>
    <div class="vnote">${v.ex} — ${v.exru}${v.note?"<br>"+v.note:""}</div></div>`}).join("");
 }
 
@@ -202,7 +205,7 @@ function render(){
   sel.value=S.verb;$("auto").checked=S.auto;
   const isT=S.view==="table";
   $("tableView").hidden=!isT;$("cardsView").style.display=isT?"none":"contents";
-  $("m-order").parentElement.style.visibility=isT?"hidden":"visible";
+  $("m-order").parentElement.style.display=isT?"none":"flex";
   if(isT){renderTable();$("count").textContent="";return}
   const pool=S.verb==="all"?CARDS:CARDS.filter(c=>c.vi==+S.verb);
   const y=pool.filter(c=>S.marks[c.id]==="yes").length,n=pool.filter(c=>S.marks[c.id]==="no").length;
