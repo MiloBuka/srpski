@@ -53,34 +53,40 @@ footer{color:var(--muted);font-size:12px;line-height:1.5}
   </header>
 
   <nav class="sets">
-    <a class="set" href="brojevi.html?v=8">
+    <a class="set" href="brojevi.html?v=9">
       <span class="glyph">123</span>
       <span class="min"><h2>Brójevi</h2><p>Числа от 0 до 1000, híljada / híljade</p>
         <span class="prog"><i id="p-br"></i></span><span class="pct" id="t-br">42 карточки</span></span>
       <span class="go">›</span>
     </a>
-    <a class="set" href="glagoli.html?v=8">
+    <a class="set" href="glagoli.html?v=9">
       <span class="glyph">-im</span>
       <span class="min"><h2>Glagoli · I</h2><p>15 глаголов на -im: raditi, učiti, govoriti…</p>
         <span class="prog"><i id="p-gl"></i></span><span class="pct" id="t-gl">90 карточек</span></span>
       <span class="go">›</span>
     </a>
-    <a class="set" href="koji-glagol.html?v=8">
+    <a class="set" href="koji-glagol.html?v=9">
       <span class="glyph">?</span>
       <span class="min"><h2>Koji glagol?</h2><p>Случайная форма — угадай глагол и лицо</p>
         <span class="prog"><i id="p-kg"></i></span><span class="pct" id="t-kg">15 карточек</span></span>
       <span class="go">›</span>
     </a>
-    <a class="set" href="kako-se-kaze.html?v=8">
+    <a class="set" href="kako-se-kaze.html?v=9">
       <span class="glyph">я→</span>
       <span class="min"><h2>Kako se kaže?</h2><p>«Мы работаем» — скажи по-сербски</p>
         <span class="prog"><i id="p-ks"></i></span><span class="pct" id="t-ks">15 карточек</span></span>
       <span class="go">›</span>
     </a>
-    <a class="set" href="pitanja.html?v=8">
+    <a class="set" href="pitanja.html?v=9">
       <span class="glyph">Ko?</span>
       <span class="min"><h2>Pitanja</h2><p>Gde, kada, zašto… — 22 вопроса с ответами</p>
         <span class="prog"><i id="p-pt"></i></span><span class="pct" id="t-pt">22 карточки</span></span>
+      <span class="go">›</span>
+    </a>
+    <a class="set" href="porodica.html?v=9">
+      <span class="glyph">◔◕</span>
+      <span class="min"><h2>Moja porodica</h2><p>Семья по поколениям: baba, ujak, ćerka…</p>
+        <span class="pct">Схема с озвучкой</span></span>
       <span class="go">›</span>
     </a>
   </nav>
@@ -103,7 +109,7 @@ prog("koji-glagol-v1",15,"p-kg","t-kg","глаголов");
 prog("kako-se-kaze-v1",15,"p-ks","t-ks","глаголов");
 prog("pitanja-v1",22,"p-pt","t-pt","вопросов");
 /* fresh-version check: GitHub Pages lets phones cache pages ~10 min */
-const SITE_V=8;
+const SITE_V=9;
 try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(d=>{
   if(d&&d.v>SITE_V&&!sessionStorage.getItem("rl"+d.v)){sessionStorage.setItem("rl"+d.v,"1");location.replace("./?v="+d.v)}
 }).catch(()=>{})}catch(e){}

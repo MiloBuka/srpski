@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Srpski">
+<meta name="theme-color" content="#2747A6">
+<title>Moja porodica · Srpski</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap">
+<style>
+/* Layout: generation bands stacked top→bottom, chips per person, side labels for dad/mom side */
+:root{
+  --bg:#E8ECF1; --surface:#FFFFFF; --ink:#18233A; --muted:#5C6880; --line:#CDD4DF;
+  --accent:#2747A6; --accent-soft:#DCE3F7;
+  --m:#0F6E7A; --m-soft:#DCF0F2; --f:#B4532A; --f-soft:#FBE7DC;
+  --f-num:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F141C; --surface:#1A2230; --ink:#E6EBF3; --muted:#9AA6BA; --line:#2C3748;
+  --accent:#8EA8F5; --accent-soft:#25325A; --m:#6FD0DB; --m-soft:#15363B; --f:#F4A27C; --f-soft:#3D2418; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F141C; --surface:#1A2230; --ink:#E6EBF3; --muted:#9AA6BA; --line:#2C3748;
+  --accent:#8EA8F5; --accent-soft:#25325A; --m:#6FD0DB; --m-soft:#15363B; --f:#F4A27C; --f-soft:#3D2418; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px}
+.wrap{max-width:620px;margin:0 auto;padding-block:14px 32px;padding-inline:16px;display:flex;flex-direction:column;gap:14px}
+.home{color:var(--muted);font:600 13px var(--f-body);text-decoration:none}
+.home:hover{color:var(--accent)}
+h1{font-family:var(--f-num);font-weight:700;font-size:clamp(26px,7vw,34px);margin:0;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:4px 0 0;font-size:14px;line-height:1.45}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.band{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.band h2{margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.band h2 em{font-style:normal;color:var(--accent);text-transform:none;letter-spacing:0;font-size:13px}
+.row{display:flex;flex-direction:column;gap:10px}
+.side{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center;min-width:0}
+.side .lab{font-size:11px;color:var(--muted);line-height:1.3}
+.pair{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:0;border-radius:12px;padding:8px 11px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:1px;font-family:var(--f-body);min-width:0}
+.chip b{font-size:16px;font-weight:700}
+.chip small{font-size:12px;opacity:.85}
+.chip .sl{font-size:11px;opacity:.75}
+.chip.m{background:var(--m-soft);color:var(--m)} .chip.f{background:var(--f-soft);color:var(--f)}
+.chip.me{background:var(--accent);color:var(--surface);padding:8px 18px;justify-content:center}
+.chip.me b{font-family:var(--f-num)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip.playing{box-shadow:0 0 0 2px currentColor}
+.arrow{text-align:center;color:var(--muted);font-size:18px;line-height:1;margin:-6px 0}
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+.w{background:var(--bg);border:0;border-radius:10px;padding:8px 10px;text-align:left;cursor:pointer;color:var(--ink);font-family:var(--f-body)}
+.w b{display:block;font-size:15px}
+.w span{font-size:12px;color:var(--muted)}
+.note{font-size:13px;color:var(--muted);line-height:1.5}
+.note b{color:var(--ink)}
+.voice{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="home" href="./">← Все тренажёры</a>
+  <header>
+    <h1>Moja porodica</h1>
+    <p class="sub">Семья по поколениям, смотрим от «ja». Нажми на слово, чтобы услышать.</p>
+  </header>
+  <div class="legend"><span><i style="background:var(--m)"></i>мужчины</span><span><i style="background:var(--f)"></i>женщины</span><span>курсивом — разговорный вариант</span></div>
+
+  <section class="band">
+    <h2>Бабушка и дедушка</h2>
+    <div class="pair">
+      <button class="chip f" data-say="baba"><b>baba</b><small>бабушка</small><span class="sl"><i>baka</i></span></button>
+      <button class="chip m" data-say="deda"><b>deda</b><small>дедушка</small><span class="sl"><i>deka</i></span></button>
+    </div>
+  </section>
+  <div class="arrow">↓</div>
+
+  <section class="band">
+    <h2>Родители, дяди и тёти <em>roditelji — родители</em></h2>
+    <div class="row">
+      <div class="side"><span class="lab">родители</span>
+        <div class="pair">
+          <button class="chip m" data-say="otac"><b>otac</b><small>отец · tata</small><span class="sl"><i>ćale</i> — «батя»</span></button>
+          <button class="chip f" data-say="majka"><b>majka</b><small>мать · mama</small><span class="sl"><i>keva</i></span></button>
+        </div>
+      </div>
+      <div class="side"><span class="lab">со стороны папы</span>
+        <div class="pair">
+          <button class="chip m" data-say="stric"><b>stric</b><small>брат папы</small></button>
+          <button class="chip f" data-say="strina"><b>strina</b><small>его жена</small></button>
+        </div>
+      </div>
+      <div class="side"><span class="lab">со стороны мамы</span>
+        <div class="pair">
+          <button class="chip m" data-say="ujak"><b>ujak</b><small>брат мамы</small></button>
+          <button class="chip f" data-say="ujna"><b>ujna</b><small>его жена</small></button>
+        </div>
+      </div>
+      <div class="side"><span class="lab">с любой стороны</span>
+        <div class="pair">
+          <button class="chip f" data-say="tetka"><b>tetka</b><small>сестра папы / мамы</small></button>
+          <button class="chip m" data-say="teča"><b>teča</b><small>её муж</small></button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="arrow">↓</div>
+
+  <section class="band">
+    <h2>Я, брат и сестра <em>для бабы и деды мы unuci — внуки</em></h2>
+    <div class="pair">
+      <button class="chip m" data-say="brat"><b>brat</b><small>брат</small><span class="sl"><i>bata</i></span></button>
+      <button class="chip me" data-say="ja"><b>ja</b><small>я</small></button>
+      <button class="chip f" data-say="sestra"><b>sestra</b><small>сестра</small><span class="sl"><i>seka</i></span></button>
+    </div>
+    <div class="pair">
+      <button class="chip m" data-say="unuk"><b>unuk</b><small>внук</small></button>
+      <button class="chip f" data-say="unuka"><b>unuka</b><small>внучка</small></button>
+    </div>
+  </section>
+  <div class="arrow">↓</div>
+
+  <section class="band">
+    <h2>Мои дети <em>deca — дети</em></h2>
+    <div class="pair">
+      <button class="chip m" data-say="sin"><b>sin</b><small>сын</small></button>
+      <button class="chip f" data-say="ćerka"><b>ćerka</b><small>дочь</small></button>
+    </div>
+  </section>
+
+  <section class="band">
+    <h2>Общие слова</h2>
+    <div class="words">
+      <button class="w" data-say="porodica"><b>porodica</b><span>семья</span></button>
+      <button class="w" data-say="familija"><b>familija</b><span>родня, родственники</span></button>
+      <button class="w" data-say="rođak"><b>rođak</b><span>родственник</span></button>
+      <button class="w" data-say="roditelji"><b>roditelji</b><span>родители</span></button>
+      <button class="w" data-say="deca"><b>deca</b><span>дети</span></button>
+      <button class="w" data-say="unuci"><b>unuci</b><span>внуки</span></button>
+      <button class="w" data-say="ime"><b>ime</b><span>имя</span></button>
+      <button class="w" data-say="prezime"><b>prezime</b><span>фамилия</span></button>
+    </div>
+  </section>
+
+  <section class="band">
+    <h2>Фразы</h2>
+    <div class="words">
+      <button class="w" data-say="Koje jezike govoriš?"><b>Koje jezike govoriš?</b><span>На каких языках ты говоришь?</span></button>
+      <button class="w" data-say="Kako se zove tvoja mama?"><b>Kako se zove tvoja mama?</b><span>Как зовут твою маму?</span></button>
+      <button class="w" data-say="Imam brata i sestru."><b>Imam brata i sestru.</b><span>У меня есть брат и сестра.</span></button>
+      <button class="w" data-say="Moja porodica živi daleko."><b>Moja porodica živi daleko.</b><span>Моя семья живёт далеко.</span></button>
+    </div>
+    <p class="note"><b>Не путай:</b> stric и ujak оба переводятся как «дядя», но stric — брат папы, а ujak — брат мамы. Strina и ujna — их жёны.</p>
+  </section>
+  <div class="voice" id="voice"></div>
+</div>
+<script>
+let voice=null,ttsOK=false;const $=id=>document.getElementById(id);
+function pickVoice(){try{const vs=speechSynthesis.getVoices()||[];
+  voice=vs.find(v=>/^sr/i.test(v.lang))||vs.find(v=>/^hr/i.test(v.lang))||vs.find(v=>/^bs/i.test(v.lang))||null;
+  $("voice").textContent=!vs.length?"":voice?"Голос: "+voice.name:"Сербского голоса на устройстве нет — читает голос по умолчанию";}catch(e){}}
+try{if(window.speechSynthesis&&window.SpeechSynthesisUtterance){ttsOK=true;pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+  else $("voice").textContent="Озвучка не работает в этом браузере — открой ссылку в Safari или Chrome"}catch(e){}
+function say(t){if(!ttsOK)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);if(voice){u.voice=voice;u.lang=voice.lang}else u.lang="sr-RS";u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-say]");if(!b)return;say(b.dataset.say);
+  document.querySelectorAll(".playing").forEach(x=>x.classList.remove("playing"));b.classList.add("playing");setTimeout(()=>b.classList.remove("playing"),900)});
+</script>
+</body>
+</html>
