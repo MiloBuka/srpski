@@ -53,31 +53,31 @@ footer{color:var(--muted);font-size:12px;line-height:1.5}
   </header>
 
   <nav class="sets">
-    <a class="set" href="brojevi.html?v=11">
+    <a class="set" href="brojevi.html?v=12">
       <span class="glyph">123</span>
       <span class="min"><h2>Brójevi</h2><p>Числа от 0 до 1000, híljada / híljade</p>
         <span class="prog"><i id="p-br"></i></span><span class="pct" id="t-br">42 карточки</span></span>
       <span class="go">›</span>
     </a>
-    <a class="set" href="glagoli.html?v=11">
+    <a class="set" href="glagoli.html?v=12">
       <span class="glyph">-im</span>
       <span class="min"><h2>Glagoli · I</h2><p>15 глаголов на -im: таблица и карточки</p>
         <span class="prog"><i id="p-gl"></i></span><span class="pct" id="t-gl">15 карточек</span></span>
       <span class="go">›</span>
     </a>
-    <a class="set" href="glagoli-a.html?v=11">
+    <a class="set" href="glagoli-a.html?v=12">
       <span class="glyph">-am</span>
       <span class="min"><h2>Glagoli · A</h2><p>24 глагола на -am: znati, gledati, pevati…</p>
         <span class="prog"><i id="p-ga"></i></span><span class="pct" id="t-ga">24 карточки</span></span>
       <span class="go">›</span>
     </a>
-    <a class="set" href="pitanja.html?v=11">
+    <a class="set" href="pitanja.html?v=12">
       <span class="glyph">Ko?</span>
       <span class="min"><h2>Pitanja</h2><p>Gde, kada, zašto… — 22 вопроса с ответами</p>
         <span class="prog"><i id="p-pt"></i></span><span class="pct" id="t-pt">22 карточки</span></span>
       <span class="go">›</span>
     </a>
-    <a class="set" href="porodica.html?v=11">
+    <a class="set" href="porodica.html?v=12">
       <span class="glyph">◔◕</span>
       <span class="min"><h2>Moja porodica</h2><p>Семья по поколениям: baba, ujak, ćerka…</p>
         <span class="pct">Схема с озвучкой</span></span>
@@ -102,7 +102,7 @@ prog("kako-se-kaze-v1",15,"p-gl","t-gl","глаголов");
 prog("glagoli-a-v1",24,"p-ga","t-ga","глаголов");
 prog("pitanja-v1",22,"p-pt","t-pt","вопросов");
 /* fresh-version check: GitHub Pages lets phones cache pages ~10 min */
-const SITE_V=11;
+const SITE_V=12;
 try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.json()).then(d=>{
   if(d&&d.v>SITE_V&&!sessionStorage.getItem("rl"+d.v)){sessionStorage.setItem("rl"+d.v,"1");location.replace("./?v="+d.v)}
 }).catch(()=>{})}catch(e){}
