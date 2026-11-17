@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Srpski">
+<meta name="theme-color" content="#2747A6">
+<title>Prisvojne zamenice · Srpski</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap">
+<style>
+[hidden]{display:none!important}
+/* Layout: generation bands stacked top→bottom, chips per person, side labels for dad/mom side */
+:root{
+  --bg:#E8ECF1; --surface:#FFFFFF; --ink:#18233A; --muted:#5C6880; --line:#CDD4DF;
+  --accent:#2747A6; --accent-soft:#DCE3F7;
+  --m:#0F6E7A; --m-soft:#DCF0F2; --f:#B4532A; --f-soft:#FBE7DC;
+  --f-num:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F141C; --surface:#1A2230; --ink:#E6EBF3; --muted:#9AA6BA; --line:#2C3748;
+  --accent:#8EA8F5; --accent-soft:#25325A; --m:#6FD0DB; --m-soft:#15363B; --f:#F4A27C; --f-soft:#3D2418; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F141C; --surface:#1A2230; --ink:#E6EBF3; --muted:#9AA6BA; --line:#2C3748;
+  --accent:#8EA8F5; --accent-soft:#25325A; --m:#6FD0DB; --m-soft:#15363B; --f:#F4A27C; --f-soft:#3D2418; color-scheme:dark }
+
+:root{--n:#2747A6;--n-soft:#DCE3F7}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--n:#8EA8F5;--n-soft:#25325A}}
+:root[data-theme="dark"]{--n:#8EA8F5;--n-soft:#25325A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px}
+.wrap{max-width:620px;margin:0 auto;padding-block:14px 32px;padding-inline:16px;display:flex;flex-direction:column;gap:12px}
+.home{color:var(--muted);font:600 13px var(--f-body);text-decoration:none}
+h1{font-family:var(--f-num);font-weight:700;font-size:clamp(22px,6.5vw,32px);margin:0;letter-spacing:-.02em;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;font-size:14px;line-height:1.45}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.opt{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.row{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px 10px;align-items:start}
+.who{display:flex;flex-direction:column;gap:2px;padding-top:4px}
+.who b{font-family:var(--f-num);font-size:20px;font-weight:700}
+.who span{font-size:12px;color:var(--muted)}
+.sets{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.c{border:0;border-radius:10px;padding:6px 9px;font:700 15px var(--f-body);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0}
+.c small{font-size:11px;font-weight:600;opacity:.8}
+.c.m{background:var(--m-soft);color:var(--m)} .c.f{background:var(--f-soft);color:var(--f)} .c.n{background:var(--n-soft);color:var(--n)}
+.c:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.c.playing{box-shadow:0 0 0 2px currentColor}
+#rows{display:flex;flex-direction:column;gap:10px}
+.note{font-size:13px;color:var(--muted);line-height:1.5}
+.note b{color:var(--ink)}
+.voice{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="home" href="./">← Все тренажёры</a>
+  <header>
+    <h1>Prisvojne zamenice</h1>
+    <p class="sub">Чей? — мой, твой, его… Нажми на форму, чтобы услышать.</p>
+  </header>
+  <div class="legend"><span><i style="background:var(--m)"></i>мужской</span><span><i style="background:var(--f)"></i>женский</span><span><i style="background:var(--n)"></i>средний</span></div>
+  <label class="opt"><input type="checkbox" id="withNoun"> Произносить со словом: <b>moj stan, moja kuća, moje selo</b></label>
+  <div id="rows"></div>
+  <p class="note"><b>Njen</b> или <b>njegov</b> выбирается по тому, <b>чьё</b> это (её или его), а окончание — по самому предмету: <i>njen brat</i>, <i>njena kuća</i>.</p>
+  <div class="voice" id="voice"></div>
+</div>
+<script>
+const R=[
+ ["ja","я","moj",["moj","moja","moje"],["moji","moje","moja"]],
+ ["ti","ты","tvoj",["tvoj","tvoja","tvoje"],["tvoji","tvoje","tvoja"]],
+ ["on","он","его",["njegov","njegova","njegovo"],["njegovi","njegove","njegova"]],
+ ["ona","она","её",["njen","njena","njeno"],["njeni","njene","njena"]],
+ ["ono","оно","его",["njegov","njegova","njegovo"],["njegovi","njegove","njegova"]],
+ ["mi","мы","наш",["naš","naša","naše"],["naši","naše","naša"]],
+ ["vi","вы","ваш",["vaš","vaša","vaše"],["vaši","vaše","vaša"]],
+ ["oni","они","их",["njihov","njihova","njihovo"],["njihovi","njihove","njihova"]]];
+const RU={"ja":["мой","моя","моё","мои"],"ti":["твой","твоя","твоё","твои"],"mi":["наш","наша","наше","наши"],"vi":["ваш","ваша","ваше","ваши"]};
+const NS=["stan","kuća","selo"],NP=["stanovi","kuće","sela"],G=["m","f","n"];
+const $=id=>document.getElementById(id);
+$("rows").innerHTML=R.map(([p,ru,,sg,pl])=>{
+  const chip=(w,g,noun,tr)=>`<button class="c ${G[g]}" data-w="${w}" data-noun="${noun}">${w}${tr?`<small>${tr}</small>`:""}</button>`;
+  const t=RU[p];
+  return `<div class="row"><div class="who"><b>${p}</b><span>${ru}</span></div><div class="sets">
+   <div><div class="lab">jednina</div><div class="chips">${sg.map((w,g)=>chip(w,g,NS[g],t&&t[g])).join("")}</div></div>
+   <div><div class="lab">množina</div><div class="chips">${pl.map((w,g)=>chip(w,g,NP[g],t&&g===0?t[3]:"")).join("")}</div></div></div></div>`}).join("");
+let voice=null,ttsOK=false;
+function pickVoice(){try{const vs=speechSynthesis.getVoices()||[];
+  voice=vs.find(v=>/^sr/i.test(v.lang))||vs.find(v=>/^hr/i.test(v.lang))||vs.find(v=>/^bs/i.test(v.lang))||null;
+  $("voice").textContent=!vs.length?"":voice?"Голос: "+voice.name:"Сербского голоса на устройстве нет — читает голос по умолчанию";}catch(e){}}
+try{if(window.speechSynthesis&&window.SpeechSynthesisUtterance){ttsOK=true;pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+  else $("voice").textContent="Озвучка не работает в этом браузере — открой ссылку в Safari или Chrome"}catch(e){}
+function say(t){if(!ttsOK)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);if(voice){u.voice=voice;u.lang=voice.lang}else u.lang="sr-RS";u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+try{$("withNoun").checked=localStorage.getItem("zam-noun")==="1"}catch(e){}
+$("withNoun").onchange=e=>{try{localStorage.setItem("zam-noun",e.target.checked?"1":"0")}catch(_){}};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-w]");if(!b)return;
+  say($("withNoun").checked?b.dataset.w+" "+b.dataset.noun:b.dataset.w);
+  document.querySelectorAll(".playing").forEach(x=>x.classList.remove("playing"));b.classList.add("playing");setTimeout(()=>b.classList.remove("playing"),900)});
+</script>
+</body>
+</html>
